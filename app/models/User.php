@@ -14,10 +14,10 @@ class User{
 
     /*** for registration process ***/
 
-    public function reg_user($name,$username,$password,$email, $type){
+    public function reg_user($request, $type){
 
-        $password = md5($password);
-        $sql="SELECT * FROM users WHERE uname='$username' OR uemail='$email'";
+        $password = md5($request->password);
+        $sql="SELECT * FROM users WHERE uname='$request->username' OR uemail='$request->email'";
 
         //checking if the username or email is available in db
         $check =  $this->db->query($sql) ;
@@ -25,46 +25,40 @@ class User{
 
         //if the username is not in db then insert to the table
         if ($count_row == 0){
-            try{
+            $validate = $this->validateReg($request);
+            if ($validate) {
                 $stmt = $this->db->prepare("INSERT INTO users(uname,upass,fullname,uemail,utype) 
-                                                       VALUES(:uname, :upass, :fullname, :uemail, :utype)");
+                                                   VALUES(:uname, :upass, :fullname, :uemail, :utype)");
 
                 // bind values
-                $stmt->bindParam(":fullname", $name);
-                $stmt->bindParam(":uname", $username);
-                $stmt->bindParam(":upass", $password);
-                $stmt->bindParam(":uemail", $email);
-                $stmt->bindParam(":utype", $type);
+                $this->bindParam($stmt,$request, $password, $type);
 
                 $stmt->execute();
 
-                return $stmt;
+                return true;
             }
-            catch(PDOException $e)
-            {
-                echo $e->getMessage();
+            else {
+                return false;
             }
         }
-        else { return false;}
+        else {
+            return false;
+        }
     }
 
     /*** for login process ***/
-    public function check_login($request, $type){
-
-        $password = md5($request->password);
-
-        $stmt = $this->db->prepare("SELECT id,utype from users WHERE uname=:username and upass=:upass and utype=:utype");
-        //checking if the username is available in the table
+    public function check_login($request){
 
         $this->validate($request);
         if (count($this->errors) > 0) {
             return ['errors' => $this->errors];
         }
         else{
+            $password = md5($request->password);
+            $stmt = $this->db->prepare("SELECT id,utype from users WHERE uname=:username and upass=:upass");
             // bind values
             $stmt->bindParam(":username", $request->username);
             $stmt->bindParam(":upass", $password);
-            $stmt->bindParam(":utype", $type);
 
             $stmt->execute();
 
@@ -86,25 +80,28 @@ class User{
         };
     }
 
-    /*** for showing the username or fullname ***/
-    public function get_fullname($uid){
-        $stmt=$this->db->prepare("SELECT fullname FROM users WHERE id=:uid");
-
-        $stmt->bindParam(":uid", $uid);
-
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        echo $row['fullname'];
+    private function validateReg($row) {
+        if (!$row->fullname || $row->fullname == "") {
+            return false;
+        };
+        if (!$row->username || $row->username == "") {
+            return false;
+        };
+        if (!$row->username || $row->username == "") {
+            return false;
+        };
+        if (!$row->email || $row->email == "") {
+            return false;
+        };
+        return true;
     }
 
-    /*** starting the session ***/
-    public function get_session(){
-        return $_SESSION['login'];
-    }
-
-    public function user_logout() {
-        $_SESSION['login'] = FALSE;
-        session_destroy();
+    private function bindParam($stmt,$request, $password, $type) {
+        $stmt->bindParam(":fullname", $request->fullname);
+        $stmt->bindParam(":uname", $request->username);
+        $stmt->bindParam(":upass", $password);
+        $stmt->bindParam(":uemail", $request->email);
+        $stmt->bindParam(":utype", $type);
     }
 }
 ?>

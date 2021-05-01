@@ -26,7 +26,7 @@ if (!$con) {
 if ($method) {
     if ($method == 'POST' && $request[0] == "") {
         $request = file_get_contents('php://input');
-        $check = $user->check_login(json_decode($request), 'admin');
+        $check = $user->check_login(json_decode($request));
         $errors = [];
         $session = [false, '', ''];
         if (array_key_exists('login', $check)) {
@@ -42,6 +42,13 @@ if ($method) {
             "authenticate" => $msg,
             "errors" => $errors,
             "session" => $session
+        ]);
+    }
+    if ($method == 'POST' && $request[0] == "register") {
+        $request = file_get_contents('php://input');
+        $reg = $user->reg_user(json_decode($request), 'customer');
+          echo json_encode([
+            "success" => $reg
         ]);
     }
 }
