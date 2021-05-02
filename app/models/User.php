@@ -12,6 +12,19 @@ class User{
         $this->db = $db;
     }
 
+    function getAll() {
+        $query = "SELECT
+                id,fullname
+            FROM
+                users
+            ORDER BY
+                id ASC";
+        $stmt = $this->db->prepare( $query );
+        $stmt->execute();
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $users;
+    }
+
     /*** for registration process ***/
 
     public function reg_user($request, $type){

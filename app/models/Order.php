@@ -6,6 +6,7 @@ class Order{
 
     // database connection and table name
     private $db;
+    private $id;
     private $tracking_no;
     private $product_id;
     private $customer_id;
@@ -16,7 +17,70 @@ class Order{
         $this->db = $db;
     }
 
-    /*** for registration process ***/
+    function getAll() {
+        $query = "SELECT
+                id,tracking_no, product_id, customer_id, status
+            FROM
+                orders
+            ORDER BY
+                id ASC";
+        $stmt = $this->db->prepare( $query );
+        $stmt->execute();
+        $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $orders;
+    }
+
+    function getOrd($id) {
+        $query = "SELECT
+                id,tracking_no, product_id, customer_id, status
+            FROM
+                orders
+            WHERE id=:id
+            ORDER BY
+                id ASC";
+        $stmt = $this->db->prepare( $query );
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $orders = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $orders;
+    }
+
+    function getCus($id) {
+        $query = "SELECT
+                id,tracking_no, product_id, customer_id, status
+            FROM
+                orders
+            WHERE customer_id=:customer_id
+            ORDER BY
+                id ASC";
+        $stmt = $this->db->prepare( $query );
+        $stmt->bindParam(':customer_id', $id);
+        $stmt->execute();
+        $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $orders;
+    }
+
+    function update($request) {
+        $query = "UPDATE
+                orders
+            SET
+                status = :status
+            WHERE
+                id = :id";
+
+        $stmt = $this->db->prepare($query);
+
+        $this->id = $request->id;
+        $this->status = $request->status;
+
+        // bind parameters
+        $stmt->bindParam(':id', $this->id);
+        $stmt->bindParam(':status', $this->status);
+        // execute the query
+        $stmt->execute();
+
+        return true;
+    }
 
     public function place_order($request){
 
