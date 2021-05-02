@@ -1,4 +1,6 @@
 <?php
+// Turn off error reporting
+error_reporting(0);
 use App\models\Product;
 use App\models\Category;
 header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);

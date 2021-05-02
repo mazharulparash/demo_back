@@ -1,4 +1,6 @@
 <?php
+// Turn off error reporting
+error_reporting(0);
 use App\models\Order;
 use App\models\Product;
 use App\models\User;
